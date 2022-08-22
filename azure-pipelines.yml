@@ -112,8 +112,8 @@ stages: # aca declata stages para luego definir cada una
     pool:
       vmImage: 'ubuntu-20.04'
     environment: test
-    variables:
-    - group: 'Release'
+    # variables:
+    # - group: 'Release'
     strategy:
       runOnce:
         deploy:
