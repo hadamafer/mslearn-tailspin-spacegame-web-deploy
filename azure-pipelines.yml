@@ -93,5 +93,5 @@ stages: # aca declata stages para luego definir cada una
             displayName: 'Azure App Service Deploy: website'
             inputs:
               azureSubscription: 'Resource Manager - Tailspin - Space Game'
-              appName: '$(WebAppNameDev)' #el nombre que tiene la web app de dev 
+              appName: 'tailspin-space-game-web-dev-20612' #el nombre que tiene la web app de dev 
               package: '$(Pipeline.Workspace)/drop/$(buildConfiguration)/*.zip'
