@@ -5,6 +5,13 @@ variables:
   buildConfiguration: 'Release'
   releaseBranchName: 'release'
 
+schedules:
+- cron: '0 3 * * *'
+  displayName: 'Deploy every day at 3 A.M.' # corre la pipelnite a las 3 de la mñ cada dia 
+  branches:
+    include:
+    - release
+  always: false  # para que solo corra cuanod hay un cambio de la ultima vez que corrio 
 
 stages: # aca declata stages para luego definir cada una 
 - stage: 'Build' # la primer stage que definieron que solo ahce la build 
@@ -94,4 +101,28 @@ stages: # aca declata stages para luego definir cada una
             inputs:
               azureSubscription: 'Resource Manager - Tailspin - Space Game'
               appName: 'tailspin-space-game-web-dev-20612' #el nombre que tiene la web app de dev 
+              package: '$(Pipeline.Workspace)/drop/$(buildConfiguration)/*.zip'
+
+- stage: 'Test' #stage que ejexcuta los test a las 3 de la mañana 
+  displayName: 'Deploy to the test environment'
+  dependsOn: Dev
+  #condition: eq(variables['Build.Reason'], 'Schedule') #condicion que sigue el trigger establecido arriba en la parte de schedule
+  jobs:
+  - deployment: Deploy
+    pool:
+      vmImage: 'ubuntu-20.04'
+    environment: test
+    variables:
+    - group: 'Release'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - download: current
+            artifact: drop
+          - task: AzureWebApp@1
+            displayName: 'Azure App Service Deploy: website'
+            inputs:
+              azureSubscription: 'Resource Manager - Tailspin - Space Game'
+              appName: '$(WebAppNameTest)'
               package: '$(Pipeline.Workspace)/drop/$(buildConfiguration)/*.zip'
