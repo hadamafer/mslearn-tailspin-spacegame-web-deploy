@@ -3,14 +3,16 @@ trigger:
 
 variables:
   buildConfiguration: 'Release'
+  releaseBranchName: 'release'
 
-stages:
-- stage: 'Build'
+
+stages: # aca declata stages para luego definir cada una 
+- stage: 'Build' # la primer stage que definieron que solo ahce la build 
   displayName: 'Build the web application'
   jobs: 
-  - job: 'Build'
+  - job: 'Build' 
     displayName: 'Build job'
-    pool:
+    pool: #crea una mv microsoft hosted con ubuntu 
       vmImage: 'ubuntu-20.04'
       demands:
       - npm
@@ -65,9 +67,15 @@ stages:
     - publish: '$(Build.ArtifactStagingDirectory)'
       artifact: drop
 
-- stage: 'Deploy'
-  displayName: 'Deploy the web application'
+- stage: 'Dev' #esta es la stage de dev que tiene la condicion de que se jhce el deploy si la anterior stage paso y si el commit se hizo desde la rama release 
+  displayName: 'Deploy to the dev environment'
   dependsOn: Build
+  condition: |
+    and
+    (
+      succeeded(),
+      eq(variables['Build.SourceBranchName'], variables['releaseBranchName'])
+    )
   jobs:
   - deployment: Deploy
     pool:
@@ -85,5 +93,5 @@ stages:
             displayName: 'Azure App Service Deploy: website'
             inputs:
               azureSubscription: 'Resource Manager - Tailspin - Space Game'
-              appName: '$(WebAppName)'
+              appName: '$(WebAppNameDev)' #el nombre que tiene la web app de dev 
               package: '$(Pipeline.Workspace)/drop/$(buildConfiguration)/*.zip'
